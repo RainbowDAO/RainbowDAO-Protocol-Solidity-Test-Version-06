@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
-
+pragma experimental ABIEncoderV2;
 
 contract daoFactory {
     
@@ -9,6 +9,14 @@ contract daoFactory {
     address public tokenaddress;
     uint public fee;
     mapping(address => address[]) public _USER_STD_REGISTRY_;
+    struct DaoInfo{
+        string name;
+        string logo;
+        string des;
+        address authority;
+        address manage;
+        address vault;
+    }
    
     // ============ Events ============
 
@@ -34,6 +42,21 @@ contract daoFactory {
         tokenaddress = _token;
         fee = fee;
     }
+    function creatDao(string memory _name,string memory _logo,string memory _des,address manage) public {
+        require(msg.sender != address(0), "Invalid address");
+       
+        DaoInfo memory addr = DaoInfo({
+            name: _name,
+            logo: _logo,
+            des: _des,
+            authority: address(0),
+            manage: manage,
+            vault: address(0)
+        });
+        
+       
+    }
+    
     
    function getRegistry(address user) public view returns (address[] memory )
     {
