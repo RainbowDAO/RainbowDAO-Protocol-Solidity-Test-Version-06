@@ -24,12 +24,14 @@ contract DaoMembers{
     modifier onlyManage(){
         require(msg.sender == creator || moderators[msg.sender], "No permisstion");
         _;
+        
     }
     
     function applyJoin(address addr) public returns(bool){
         require(!members.contains(addr),"Is memeber");
         require(!applying.contains(addr),"Applying");
         applying.add(addr);
+        
         return true;
     }
     
