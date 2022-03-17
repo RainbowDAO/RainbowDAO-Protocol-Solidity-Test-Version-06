@@ -1,7 +1,7 @@
 pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import {Set} from "./lib/TokenSet.sol";
+import {Set} from "../lib/TokenSet.sol";
 
 contract Vault{
     using Set for Set.Address;
