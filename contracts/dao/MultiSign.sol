@@ -220,6 +220,92 @@ contract MultiSign{
         emit TransactionCreated(msg.sender, transactionId);
         
     }
+function _addLiquidity(address tokenA,address tokenB,uint amountA,uint amountB) internal returns(bool){
+        address router = creator.router();
+        uint deadline = block.timestamp + 100;
+        uint qr;
+
+        if(tokenA == ETH_ADDR){
+            IERC20(tokenB).approve(router,amountB);
+            (,,qr) = IUniswapV2Router01(router).addLiquidityETH(tokenB,amountB,0,0,address(this),deadline);
+        }
+        if(tokenB == ETH_ADDR){
+            IERC20(tokenA).approve(router,amountA);
+            (,,qr) = IUniswapV2Router01(router).addLiquidityETH(tokenA,amountA,0,0,address(this),deadline);
+        }
+
+        
+        
+        IERC20(tokenA).approve(router,amountA);
+        IERC20(tokenB).approve(router,amountB);
+        (,,qr) = IUniswapV2Router01(router).addLiquidity(tokenA,tokenB,amountA,amountB,0,0,address(this),deadline);
+        return true;
+    }
     
+    
+    function addLiquidityETH(address token,uint amount,address router) payable public returns(bool){
+        // address router = creator.router();
+        uint deadline = block.timestamp + 60;
+        IERC20(token).approve(router,amount);
+        (,,uint qr) = IUniswapV2Router01(router).addLiquidityETH(token,amount,0,0,address(this),deadline);
+        liquidity[token][ETH_ADDR] += qr;
+        liquidity[ETH_ADDR][token] += qr;
+        return true;
+    }
+
+    function _lending(address token,uint amount) internal returns(bool){
+        address lending = creator.lending();
+        IERC20(token).approve(lending,amount);
+        ILendingPool(lending).deposit(token,amount,address(this),0);
+        return true;
+    }
+    
+    function removeLiquidity(address tokenA,address tokenB) isManager public returns(bool){
+        address factory = creator.factory();
+        address router = creator.router();
+        address pair = IFactory(factory).getPair(tokenA,tokenB);
+        uint deadline = block.timestamp + 60;
+        IUniswapV2Router01(router).removeLiquidity(tokenA,tokenB,IERC20(pair).balanceOf(address(this)),0,0,address(this),deadline);
+    }
+
+    function withdrawLending(address token,uint amount) isManager public returns(bool){
+        address lending = creator.lending();
+        ILendingPool(lending).withdraw(token,amount,address(this));
+    }
+    
+    function getLiquidity(address pair) public view returns(uint){
+        return IERC20(pair).balanceOf(address(this));
+    }
+    
+    function getBalance() public view returns(uint){
+        return address(this).balance;
+    }
+    
+    function getERC20Balance(address token) public view returns(uint){
+        return IERC20(token).balanceOf(address(this));
+    }
+    
+    function addManager(address manager) internal {
+        managers[manager] = true;
+        creator.addMultiSign(manager,address(this));
+    }
+    
+    function removeManager(address manager) internal {
+        managers[manager] = false;
+        creator.removeMultiSign(manager,address(this));
+    }
+    
+}
+
+interface ICreator{
+    function removeMultiSign(address account, address addr) external;
+    function addMultiSign(address account, address addr) external;
+    function factory() external view returns(address);
+    function router() external view returns(address);
+    function lending() external view returns(address);
+}
+
+interface IFactory{
+    function getPair(address tokenA, address tokenB) external view returns (address pair);
 }
 
