@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.0;
 
-    library Set {
-        struct TokenIdSet {
+library Set {
+    struct TokenIdSet {
             bytes32[] _values;
             mapping (bytes32 => uint256) _indexes;
     }
